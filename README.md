@@ -136,38 +136,51 @@ Chaque action d'un agent génère un enregistrement horodaté consultable en dir
 
 ---
 
-## 📂 6. Structure du Répertoire du Projet
+## 📂 6. Structure Modulaire du Répertoire du Projet
 
 ```text
-Sujet_2_Agent_Medical_Darija/
+dwa-agents/
 ├── README.md                                  # Documentation officielle de référence
-├── Context_System_Prompt.md                   # Cahier des charges et spécifications système
-├── SUIVI_PROGRES_PROJET.md                    # Journal d'avancement et de conformité académique
+├── demo-agent-sante/                          # APPLICATION MULTI-AGENTS INTÉGRÉE (Vite + React + TS)
+│   ├── src/
+│   │   ├── App.tsx                            # Interface Hub Santé (Accueil, Dwak IA, Profil, Diagnostic)
+│   │   ├── types/
+│   │   │   └── agentTypes.ts                  # Schéma SharedState, Trace et interfaces strictes
+│   │   │
+│   │   ├── agents/                            # ARCHITECTURE MODULAIRE DÉDIÉE (1 DOSSIER PAR AGENT)
+│   │   │   ├── 0_Orchestrator/
+│   │   │   │   └── HealthOrchestrator.ts      # 🧭 Orchestrateur central & superviseur du cycle de vie
+│   │   │   ├── 1_VisionOcrAgent/
+│   │   │   │   └── VisionOcrAgent.ts          # 👁️ Agent 1 : Vision & OCR optique multi-angles
+│   │   │   ├── 2_IdentificationAgent/
+│   │   │   │   └── IdentificationAgent.ts     # 🏷️ Agent 2 : Normalisation pharmaceutique (DCI / Dosages)
+│   │   │   ├── 3_RagAgent/
+│   │   │   │   └── RagAgent.ts                # 📚 Agent 3 : Recherche documentaire RAG officielle (ANSM/Vidal)
+│   │   │   ├── 4_PharmacologyAgent/
+│   │   │   │   └── PharmacologyAgent.ts       # 💊 Agent 4 : Pharmacologie clinique, interactions & allergies
+│   │   │   ├── 5_ValidationAgent/
+│   │   │   │   └── ValidationAgent.ts         # ⚖️ Agent 5 : Juge de paix anti-hallucination & conformité
+│   │   │   ├── 6_GenerationAgent/
+│   │   │   │   └── GenerationAgent.ts         # ✍️ Agent 6 : Vulgarisation multilingue (Darija, FR, EN)
+│   │   │   └── 7_VoiceAgent/
+│   │   │       └── VoiceAgent.ts              # 🗣️ Agent 7 : Synthèse vocale TTS en Darija marocaine
+│   │   │
+│   │   ├── services/
+│   │   │   └── agentService.ts                # Client API Coarena (Modèle Gemini 3.8 Flash) & TTS
+│   │   │
+│   │   ├── components/
+│   │   │   ├── ScanModal.tsx                  # Modal d'acquisition multi-photos (0/5)
+│   │   │   ├── ArabicVoiceModal.tsx           # Modal vocale interactive avec onde pulsée en Darija
+│   │   │   └── ExecutionTracePanel.tsx        # Tiroir d'affichage en direct de la traçabilité
+│   │   └── index.css                          # Thème Glassmorphism Tailwind & typographies
+│   │
+│   ├── test-agents.mjs                        # Banc d'essai automatisé de test de bout en bout
+│   └── package.json
 │
-└── agent_multimodal_sante/
-    ├── demo-agent-sante/                      # APPLICATION MULTI-AGENTS INTÉGRÉE (Vite + React + TS)
-    │   ├── src/
-    │   │   ├── App.tsx                        # Interface Hub Santé (Accueil, Dwak IA, Profil, Diagnostic)
-    │   │   ├── types/
-    │   │   │   └── agentTypes.ts              # Schéma SharedState, Trace et interfaces strictes
-    │   │   ├── services/
-    │   │   │   ├── orchestrator/
-    │   │   │   │   └── MultiAgentOrchestrator.ts # Orchestrateur central et pipeline des 7 agents
-    │   │   │   ├── agents/
-    │   │   │   │   └── ValidationAgent.ts     # Agent de validation anti-hallucination
-    │   │   │   └── agentService.ts            # Client API Coarena (Modèle Gemini 3.8 Flash) & TTS
-    │   │   ├── components/
-    │   │   │   ├── ScanModal.tsx              # Modal d'acquisition multi-photos (0/5)
-    │   │   │   ├── ArabicVoiceModal.tsx       # Modal vocale interactive avec onde pulsée en Darija
-    │   │   │   └── ExecutionTracePanel.tsx    # Tiroir d'affichage en direct de la traçabilité
-    │   │   └── index.css                      # Thème Glassmorphism Tailwind & typographies
-    │   ├── test-agents.mjs                    # Banc d'essai automatisé de test de bout en bout
-    │   └── package.json
-    │
-    ├── vision_ocr/                            # Algorithmes de compression d'images et OCR
-    ├── rag_pharmacology/                      # Base de connaissances d'interactions médicamenteuses
-    ├── nlp_darija_prompts/                    # Ingénierie des prompts spécialisés Darija marocaine
-    └── voice_tts/                             # Utilitaires de synthèse vocale et d'élocution
+├── vision_ocr/                                # Algorithmes de compression d'images et OCR
+├── rag_pharmacology/                          # Base de connaissances d'interactions médicamenteuses
+├── nlp_darija_prompts/                        # Ingénierie des prompts spécialisés Darija marocaine
+└── voice_tts/                                 # Utilitaires de synthèse vocale et d'élocution
 ```
 
 ---
