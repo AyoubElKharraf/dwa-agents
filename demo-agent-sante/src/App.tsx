@@ -23,8 +23,9 @@ import {
 import { ScanModal } from "./components/ScanModal";
 import { ArabicVoiceModal } from "./components/ArabicVoiceModal";
 import { ExecutionTracePanel } from "./components/ExecutionTracePanel";
-import { runClinicalDiagnostic, speakDarijaText, type DiagnosticResult } from "./services/agentService";
-import { MultiAgentOrchestrator } from "./services/orchestrator/MultiAgentOrchestrator";
+import { runClinicalDiagnostic, type DiagnosticResult } from "./services/agentService";
+import { HealthOrchestrator } from "./agents/0_Orchestrator/HealthOrchestrator";
+import { VoiceAgent } from "./agents/7_VoiceAgent/VoiceAgent";
 import type { SharedState, AgentTraceStep } from "./types/agentTypes";
 
 // Definition of views in Health Hub
@@ -133,7 +134,7 @@ export function App() {
         executionTrace: [],
       };
 
-      const orchestrator = new MultiAgentOrchestrator(initialSharedState, (updatedState) => {
+      const orchestrator = new HealthOrchestrator(initialSharedState, (updatedState) => {
         setTraces([...updatedState.executionTrace]);
         setSharedState({ ...updatedState });
       });
@@ -160,7 +161,11 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#07111f] text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-900">
+    <div className="min-h-screen bg-[#060c18] text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-900 relative overflow-hidden">
+      {/* Background Glows & Ambient Glassmorphism */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/3 right-10 w-[30rem] h-[30rem] bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-10 left-1/3 w-80 h-80 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none" />
       {/* Top Navbar */}
       <header className="sticky top-0 z-40 border-b border-white/[0.08] bg-[#07111f]/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between px-6 py-3.5">
@@ -603,47 +608,72 @@ export function App() {
 
               {/* SharedState Result Box (Si analyse effectuée) */}
               {sharedState?.identifiedMedications && sharedState.identifiedMedications.length > 0 && (
-                <div className="p-6 rounded-3xl border border-emerald-500/30 bg-slate-900/80 backdrop-blur-xl space-y-4 animate-in fade-in">
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                    <span className="text-xs font-bold text-emerald-400 uppercase">
-                      Dernière Analyse Multi-Agents (Mémoire Partagée)
-                    </span>
-                    <span className="text-[11px] font-mono text-slate-400">
-                      ID: {sharedState.requestId}
+                <div className="p-6 rounded-3xl border border-emerald-500/40 bg-slate-900/90 backdrop-blur-2xl space-y-5 shadow-2xl shadow-emerald-950/40 animate-in fade-in duration-300">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
+                        Résultat Validé par l'Architecture Multi-Agents (Mémoire Partagée)
+                      </span>
+                    </div>
+                    <span className="text-[11px] font-mono text-slate-400 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">
+                      Session ID: {sharedState.requestId}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {sharedState.identifiedMedications.map((m) => (
-                      <div key={m.id} className="p-4 rounded-2xl bg-slate-950 border border-slate-800">
-                        <div className="text-sm font-bold text-white">{m.commercialName} ({m.dosage})</div>
-                        <div className="text-xs text-emerald-400 font-mono mt-0.5">DCI: {m.dci}</div>
-                        <div className="text-[11px] text-slate-400 mt-1">Forme: {m.form}</div>
-                        <div className="text-[11px] text-slate-300 mt-2 p-2 rounded-xl bg-slate-900">
-                          Posologie : {m.detectedInstructions}
+                      <div key={m.id} className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800/80 hover:border-emerald-500/30 transition">
+                        <div className="flex items-center justify-between">
+                          <div className="text-base font-bold text-white tracking-tight">{m.commercialName}</div>
+                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                            Score : {(m.confidenceScore * 100).toFixed(0)}%
+                          </span>
+                        </div>
+                        <div className="text-xs text-emerald-400 font-mono mt-1 font-semibold">DCI : {m.dci} • {m.dosage}</div>
+                        <div className="text-[11px] text-slate-400 mt-1">Forme galénique : {m.form}</div>
+                        <div className="text-[11px] text-slate-300 mt-2 p-2.5 rounded-xl bg-slate-900 border border-slate-800 leading-relaxed">
+                          <strong>Posologie détectée :</strong> {m.detectedInstructions}
                         </div>
                       </div>
                     ))}
+
+                    {/* Preuve RAG & Monographie */}
+                    {sharedState.ragSources && sharedState.ragSources.length > 0 && (
+                      <div className="p-4 rounded-2xl bg-cyan-950/20 border border-cyan-800/30 flex flex-col justify-between">
+                        <div>
+                          <div className="text-xs font-bold text-cyan-300 mb-1 flex items-center gap-1.5">
+                            📚 Preuve RAG & Monographie Officielle :
+                          </div>
+                          <p className="text-xs text-slate-300 leading-relaxed mt-1">
+                            {sharedState.ragSources[0].monographSummary}
+                          </p>
+                        </div>
+                        <div className="mt-3 text-[10px] text-cyan-400 font-mono bg-slate-950/70 p-2 rounded-lg border border-cyan-900/40">
+                          Source : {sharedState.ragSources[0].sourceName}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Restitution Darija Multimodale */}
+                  {/* Restitution Darija Multimodale & TTS */}
                   {sharedState.multilingualOutput?.darija && (
-                    <div className="p-4 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 flex items-start justify-between gap-4">
+                    <div className="p-5 rounded-2xl bg-gradient-to-r from-indigo-950/60 via-purple-950/40 to-slate-950 border border-indigo-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
-                        <div className="text-xs font-bold text-indigo-300 mb-1">
-                          الشرح بالدارجة المغربية (Agent de Génération) :
+                        <div className="text-xs font-bold text-indigo-300 mb-1.5 flex items-center gap-2">
+                          <span>🇲🇦 الشرح بالدارجة المغربية (Agent de Génération) :</span>
                         </div>
-                        <p className="text-sm font-semibold text-white leading-relaxed" dir="rtl">
+                        <p className="text-sm font-semibold text-white leading-relaxed font-arabic" dir="rtl">
                           {sharedState.multilingualOutput.darija.instructions}
                         </p>
                       </div>
                       <button
                         onClick={() =>
-                          speakDarijaText(sharedState.multilingualOutput?.darija.instructions || "")
+                          VoiceAgent.speak(sharedState.multilingualOutput?.darija.instructions || "")
                         }
-                        className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 shrink-0"
+                        className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:brightness-110 text-white text-xs font-bold flex items-center justify-center gap-2 shrink-0 shadow-lg shadow-indigo-600/30 transition hover:scale-105"
                       >
-                        <Volume2 size={14} /> Écouter (TTS)
+                        <Volume2 size={16} /> Écouter (Agent Vocal)
                       </button>
                     </div>
                   )}
