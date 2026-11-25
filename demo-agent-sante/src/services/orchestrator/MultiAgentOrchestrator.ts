@@ -5,7 +5,7 @@ import type {
   PharmacologyAlert,
   MultilingualOutput,
 } from "../../types/agentTypes";
-import { ValidationAgent } from "./ValidationAgent";
+import { ValidationAgent } from "../agents/ValidationAgent";
 
 const COARENA_API_KEY = "coa_43ad3b0c9896807241edbd1235e8fe4b";
 const COARENA_BASE_URL = "https://coarena.ai/api/v1/chat/completions";
